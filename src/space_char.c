@@ -7,7 +7,6 @@ int space_char(char c){
     }
     else if(c == '\t' || ' ')
         return True;
-       
-  }
-
+ }
 }
+
