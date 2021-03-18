@@ -1,140 +1,261 @@
-#ifndef _TOKENIZER_
-#define _TOKENIZER_
+
+
 #include "tokenizer.h"
-#include <stdio.h>
+
+
+
 #include <stdlib.h>
 
-/* Return true (non-zero) if c is a whitespace characer
-   ('\t' or ' ').  
-   Zero terminators are not printable (therefore false) */
+#include <stdio.h>
 
-#define _Bool char
-#define TRUE 1
-#define FALSE 0
+int string_length(char* str)
 
-int space_char(char c){
-  
-    while(c != EOF){
+{
 
-      if(c == 0){
+  int counter = 0;
 
-	return FALSE;
-      }
-      else if(c == '\t' || ' ')
-	return TRUE;
-    } 
-}
+  while(*str != '\0' && *str != '\n')
 
+    {
 
-/* Return true (non-zero) if c is a non-whitespace 
-   character (not tab or space).  
-   Zero terminators are not printable (therefore false) */ 
-int non_space_char(char c){
+      counter++;
 
-  while(c != EOF){
-    if(c==0){
-      return FALSE;
+      *str++;
+
     }
-    else if(c != '\t'  || ' ' || '\n')
-      return TRUE;
-  }
+
+  return counter;
+
 }
 
-/* Returns a pointer to the first character of the next 
-   space-separated word in zero-terminated str.  Return a zero pointer if 
-   str does not contain any words. */
-char word_start(char *str){
-  while(*str){
-    if(non_space_char(*str)){
-      return *str;
-    }
-    str++;
-  }
-  return 0;
-} 
 
-/* Returns a pointer terminator char following *word */
-char *word_terminator(char *word){
-  while(*word){
-    if(space_char(*word)){
-	return word;
-      }
-      word++;
-  }
-    return 0;
-}
 
-/* Counts the number of words in the string argument. */
- #define OUT 0
- #define IN 1
+/*
 
-// returns number of words in str
- int count_words(char *str)
- {
+    In order to make use of this function in our word start
 
-   int state = OUT;
-   int wc = 0;  // word count
-   // Scan all characters one by one
-   while (*str)
-     {
-       // If next character is a separator, set the
-       // state as OUT
-       if (*str == ' ' || *str == '\n' || *str == '\t')
-	 state = OUT;
-       // If next character is not a word separator and
-       // state is OUT, then set the state as IN and
-       // increment word count
-       else if (state == OUT)
-	 {
-	   state = IN;
-	   ++wc;
-	 }
-       // Move to next character
-       ++str;
-     }
-   return wc;
- }
+    and word end function we will make a SPACE a non valid 
 
-   
-/* Returns a fresly allocated new zero-terminated string 
-   containing <len> chars from <inStr> */
- char *copy_str(char *inStr, short len){
-   //Creates a new string of length len and contains len chars from the string and return it.
-   char *outStr = malloc(len+1);
-   for(int i = 0; i < len; i++){
-     outStr[i] = *&inStr[i];
-   }
-   outStr[len] = '\0';
-   return outStr;
- }
+    character. 
 
-/* Returns a freshly allocated zero-terminated vector of freshly allocated 
-   space-separated tokens from zero-terminated str.
-
-   For example, tokenize("hello world string") would result in:
-     tokens[0] = "hello"
-     tokens[1] = "world"
-     tokens[2] = "string" 
-     tokens[3] = 0
 */
- char **tokenize(char* str){
-   int size = count_words(str);
-   char **t = malloc(size + 1);
-   char *tmp;
-   for(int i = 0; i < size; i++){
-     tmp = word_terminator(str);
-     printf("tmp: %s\n", tmp);
-     printf("%u: %u\n", (void*)&tmp, (void*)&str);
-     t[i] = copy_str(str, (void*)&tmp - (void*)&str);
-     *str = word_start(str);
-   }
-   return t;
- }
 
-/* Prints all tokens. */
-void print_tokens(char **tokens);
+char is_valid_character(char c)
 
-/* Frees all tokens and the vector containing themx. */
-void free_tokens(char **tokens);
+{
 
-#endif
+  return (c >= 33 && c <= 125) ? 1 : 0;
+
+}
+
+
+
+/*
+
+    Function to find the begining of a word based on a position in a string given.
+
+*/
+
+int word_start(char* str, int pos)
+
+{
+
+  while (pos >= 0 &&  pos < string_length(str))
+
+    {
+
+      // If we are in a valid character and our previous character is not valid return pos.
+
+      if (is_valid_character(str[pos]) && !is_valid_character(str[pos-1]))
+
+	{
+
+	  return pos;
+
+	}
+
+      // If we are in a space move foward.
+
+      if (!is_valid_character(str[pos]))
+
+	{
+
+	  pos++;
+
+	  continue;
+
+	}
+
+      // Move back since we are in the middle of a string.
+
+      pos--;
+
+    }
+
+
+
+  return -1;
+
+}
+
+
+
+int word_end(char* str, int pos)
+
+{
+
+  while(pos >= 0 && pos < string_length(str))
+
+    {
+
+      // If we are at a valid character an our next position is a in valid character return pos.
+
+      if (is_valid_character(str[pos]) && !is_valid_character(str[pos+1]))
+
+	{
+
+	  return pos;
+
+	}
+
+      // Move foward since we are in the middle of a string or in an ivalid pos.
+
+      pos++;
+
+    }
+
+  return -1;
+
+}
+
+
+
+int count_words(char* str)
+
+{
+
+  int i = 0;
+
+  int word_counter = 0;
+
+  while(i < string_length(str))
+
+    {
+
+      // find starting position of word.
+
+      int start = word_start(str, i);
+
+      int end = word_end(str, i);
+
+
+
+      if (start == -1 && end == -1)
+
+	{
+
+	  break;
+
+	}
+
+
+
+      word_counter++;
+
+      i = end + 1;
+
+    }
+
+  return word_counter;
+
+}
+
+
+
+void print_tokens(char** ppStr)
+
+{
+
+  while (*ppStr)
+
+    {
+
+      printf("[%s],",*ppStr);
+
+      *ppStr++;
+
+    }
+
+  printf("\n");
+
+}
+
+
+
+void free_tokens(char** ppStr)
+
+{
+
+  while (*ppStr++)
+
+    {
+
+      free(*ppStr);
+
+    }
+
+  //free(ppStr);
+
+}
+
+
+
+char** tokenize(char* pStr)
+
+{
+
+  int word_count = count_words(pStr);
+
+  char** ppStr = malloc((sizeof(char*) * word_count) + 1 );
+
+  int i = 0;
+
+  int wi = 0;
+
+  while (i < word_count)
+
+    {
+
+      int start = word_start(pStr, wi);
+
+      int end = word_end(pStr, start);
+
+      char* temp = malloc(sizeof(char) * (end-start) + 1);
+
+      int j = 0;
+
+      while(start <= end)
+
+	{
+
+	  *(temp+j) = *(pStr+start);
+
+	  j++;
+
+	  start++;
+
+	}
+
+
+
+      *(ppStr+i) = temp;
+
+      i++;
+
+      wi = end + 1;
+
+    }
+
+  return ppStr;
+
+}
