@@ -1,24 +1,83 @@
 #include <stdio.h>
-#define MAX_LEN 80
+
+#include <stdlib.h>
+
+#include "tokenizer.h"
+
+#include "history.h"
 
 
 
-int
-
-main (int argc, char *argv[])
+int main()
 
 {
 
-  char a_word[MAX_LEN];
+  List* history = init_history();
+
+  char str[100];
+
+  char* pStr;
+
+  pStr= str;
+
+  while(1)
+
+    {
+
+      printf("$ ");
+
+      fgets(str, sizeof str, stdin);
+
+      if(pStr[0]=='!')
+
+	{
+
+	  int num = pStr[1] - '0';
+
+	  if(!num)
+
+	    {
+
+	      print_history(history);
+
+	      continue;
+
+	    }
+
+	  char* pStrHistory = get_history(history,num);
+
+	  int i = 0;
+
+	  int j = 0;
+
+	  while(pStrHistory[i])
+
+	    {
+
+	      pStr[j++] = pStrHistory[i++];
+
+	    }
+
+	}
 
 
 
-  printf ("> ");
+      printf("%s", pStr);
 
-  scanf ("%s", a_word);
+      char** ppStr = tokenize(pStr);
 
-  printf ("%s\n", a_word);
+      printf("Tokens: ");
+
+      print_tokens(ppStr);
+
+      free_tokens(ppStr);
+
+      add_history(history, pStr);
+
+    }
 
   return 0;
 
 }
+
+

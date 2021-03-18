@@ -16,11 +16,13 @@ history.o: history.h
 
 tokenizer.o: history.h
 
+make: UI.c history.c tokenizer.c
 
+	cc -o make UI.c history.c tokenizer.c
 
 # $@=target, $^=prerequisites
 
-sortargs: history.o tokenizer.o
+tokenizer: UI.c history.c tokenizer.c
 
 	cc -o $@ $^ $(CFLAGS)
 
